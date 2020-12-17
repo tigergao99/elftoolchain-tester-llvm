@@ -27,7 +27,7 @@ def run_tests():
                 os.system(f'./llvm-lit ../../llvm/test/tools/{f}')
 
 def main():
-    parser = argparse.ArgumentParser(prog='elftoolchain_tester', description='Prints missing FreeBSD syscalls.')
+    parser = argparse.ArgumentParser(prog='elftoolchain_tester', description='Test elftoolchain against LLVM tests.')
     parser.add_argument('-p', '--path', required=True, help='Path of llvm-project checkout.')
     args = parser.parse_args()
     
