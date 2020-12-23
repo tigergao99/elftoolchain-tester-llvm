@@ -3,9 +3,9 @@ import argparse
 import os
 import sys
 
-filelist = {
+filelist = [
     'llvm-ar', 'llvm-addr2line', 'llvm-nm', 'llvm-objcopy', 'llvm-objdump',
-    'llvm-ranlib', 'llvm-readelf', 'llvm-size', 'llvm-strings', 'llvm-strip'}
+    'llvm-ranlib', 'llvm-readelf', 'llvm-size', 'llvm-strings', 'llvm-strip']
 
 def create_symlinks():
     bin_map = {'llvm-objdump': 'elfdump'}
@@ -31,12 +31,14 @@ def run_tests():
 def parse_testsuite(file):
     prog = None
     failed_tests = set()
+    fileset = set(filelist)
     for line in file:
         line = line.strip()
-        if line in filelist:
+        if line in fileset:
             if prog:
                 yield (prog, failed_tests)
             prog = line
+            failed_tests.clear()
         elif line[:4] == 'LLVM':
             failed_tests.add(line.split()[2])
 
@@ -47,13 +49,17 @@ def compare_test_results(file1, file2):
                 raise ValueError('Two test results are not run in same order or one is missing some elftoolchain executables.')
         except:
             sys.exit(1)
-        print(p1)
-        print(f'Additional tests that passed in {file2.name} since {file1.name}:')
-        for test in failed1 - failed2:
-            print('\t' + test)
-        print(f'Tests that regressed in {file2.name} since {file1.name}:')
-        for test in failed2 - failed1:
-            print('\t' + test)
+        strbuilder = []
+        for i, test in enumerate(failed1 - failed2):
+            if i == 0:
+                strbuilder.append(f'Additional tests that passed in {file2.name} since {file1.name}:\n')
+            strbuilder.append('\t' + test + '\n')
+        for i, test in enumerate(failed2 - failed1):
+            if i == 0:
+                strbuilder.append(f'Tests that regressed in {file2.name} since {file1.name}:\n')
+            strbuilder.append('\t' + test + '\n')
+        if strbuilder:
+            print('For program ' + p1 + ':\n' + ''.join(strbuilder))
 
 def main():
     parser = argparse.ArgumentParser(prog='elftoolchain_tester', description='Test elftoolchain against LLVM tests.')
