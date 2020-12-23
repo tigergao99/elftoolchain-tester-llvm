@@ -47,7 +47,8 @@ def compare_test_results(file1, file2):
         try:
             if p1 != p2:
                 raise ValueError('Two test results are not run in same order or one is missing some elftoolchain executables.')
-        except:
+        except ValueError as e:
+            print(e)
             sys.exit(1)
         strbuilder = []
         for i, test in enumerate(failed1 - failed2):
